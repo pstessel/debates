@@ -1,5 +1,7 @@
 # http://www.unt.edu/rss/class/Jon/Benchmarks/TextMining_L_JDS_Jan2014.pdf
 
+require(stringr)
+
 policy.HTML.page <- readLines("http://www.weil.com/people/garrett-charon")
 length(policy.HTML.page)
 policy.HTML.page

@@ -13,12 +13,8 @@ debate.df <- data.frame(do.call('rbind', strsplit(as.character(debate.v),':',fix
 
 trump_lines <- debate.df[which(debate.df$X1=="TRUMP"),]
 trump_lines$X1 <- NULL
-trump_lines$X2 <- as.character(trump_lines$X2)
-class(trump_lines)
-trump_lines.v <- as.vector(trump_lines)
-trump_lines.l <- as.list(trump_lines)
+trump_lines
 
-trump.lines.lower.v <- tolower(trump_lines.v)
 
 
 
