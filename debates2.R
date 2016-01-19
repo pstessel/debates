@@ -1,4 +1,4 @@
-setwd("C:/Users/pstessel/Documents/repos/debates/texts/")
+setwd("/Volumes/HD2/Users/pstessel/Documents/git_repos/debates/texts/")
 
 rm(list=ls(all = TRUE))
 
@@ -8,6 +8,29 @@ require(stringr)
 # Read in text
 debate.v <- scan("r_121515.1.txt", what="character", sep="\n")
 
+<<<<<<< HEAD
+debate.v <- do.call('rbind', strsplit(as.character(debate.v),':',fixed=TRUE))
+debate.v
+
+trump_lines.v <- debate.v[which(debate.v$X1=="TRUMP"),]
+trump_lines.df
+trump_lines.df$X1 <- NULL
+trump_lines.df$X2 <- as.character(trump_lines$X2)
+trump_lines.df
+
+
+trump_lines.v <- paste(trump_lines.df, collapse=" ")
+trump_lines.v
+
+trump.lines.lower.v <- tolower(trump_lines.v)
+trump.lines.lower.v
+
+not.blanks.v <- which(trump.lines.lower.v !="")
+not.blanks.v
+
+# Total number of trump words
+length(trump.lines.lower.v)
+=======
 debate.df <- data.frame(do.call('rbind', strsplit(as.character(debate.v),':',fixed=TRUE)))
 class(debate.df)
 
@@ -73,5 +96,6 @@ terms <- inspect(tdm)
 terms
 terms <- order(terms)
 terms
+>>>>>>> 5f722f728c0ed98c46302b2b4f8e02ce0a2ac9f4
 
 findFreqTerms(x=tdm, lowfreq=8, highfreq=Inf)
