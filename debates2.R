@@ -1,4 +1,4 @@
-setwd("C:/Users/pstessel/Documents/repos/debates/texts/")
+setwd("/Volumes/HD2/Users/pstessel/Documents/git_repos/debates/texts/")
 
 require(dplyr)
 
@@ -9,61 +9,26 @@ debate.v <- scan("r_121515.1.txt", what="character", sep="\n")
 debate.v
 
 
-debate.df <- data.frame(do.call('rbind', strsplit(as.character(debate.v),':',fixed=TRUE)))
+debate.v <- do.call('rbind', strsplit(as.character(debate.v),':',fixed=TRUE))
+debate.v
 
-trump_lines <- debate.df[which(debate.df$X1=="TRUMP"),]
-trump_lines$X1 <- NULL
-trump_lines$X2 <- as.character(trump_lines$X2)
-class(trump_lines)
-trump_lines.v <- as.vector(trump_lines)
-trump_lines.l <- as.list(trump_lines)
+trump_lines.v <- debate.v[which(debate.v$X1=="TRUMP"),]
+trump_lines.df
+trump_lines.df$X1 <- NULL
+trump_lines.df$X2 <- as.character(trump_lines$X2)
+trump_lines.df
+
+
+trump_lines.v <- paste(trump_lines.df, collapse=" ")
+trump_lines.v
 
 trump.lines.lower.v <- tolower(trump_lines.v)
+trump.lines.lower.v
 
+not.blanks.v <- which(trump.lines.lower.v !="")
+not.blanks.v
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class(new_table)
-new_table <- rename(new_table, c(V1="speaker", V2="lines"))
-
-trump_lines <- subset(new_table, speaker="TRUMP", select="lines")
-
-# Pull out the spoken lines
-speakers <- debate.v[grepl("^[^\\s]\\w+:", debate.v)]
-speakers
-
-# Split off the speaker's names
-speaker_split <- debate.v(speakers, split = ":")
-speaker_split
-
-# Get names
-speaker_names <- sapply(speaker_split, "[", 1L)
-speaker_names
-
-# And what they said (collapsing because their lines may have had other colons that we lost):
-speaker_parts <- sapply(speaker_split, function(x) paste(x[-1L], collapse = ":"))
-unlist(speaker_parts)
-speaker_parts
-
-trump <- which(speaker_names == "TRUMP")
-
-(unlist(strsplit(speaker_parts[trump], split = "")) == " ")
-
+# Total number of trump words
+length(trump.lines.lower.v)
 
 write.csv(new_table, file = "new_table.csv")
