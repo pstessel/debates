@@ -1,4 +1,8 @@
-setwd("C:/Users/pstessel/Documents/repos/debates/texts/")
+if(grepl("apple", R.Version()$platform)) {
+  print("Great")
+} else {
+  setwd("C:/Users/pstessel/Documents/repos/debates/texts/")
+  }
 
 rm(list=ls(all = TRUE))
 
@@ -10,8 +14,13 @@ debate.v <- scan("r_121515.1.txt", what="character", sep="\n")
 
 debate.df <- data.frame(do.call('rbind', strsplit(as.character(debate.v),':',fixed=TRUE)))
 class(debate.df)
+debate.df
 
-can_lines <- debate.df[which(debate.df$X1=="CHRISTIE"),]
+candidate <- as.list(unique(debate.df$X1))
+candidate
+
+words <- function(x){
+can_lines <- debate.df[which(debate.df$X1==(x)),]
 can_lines$X1 <- NULL
 can_lines.v <- unlist(can_lines)
 can_lines.v <- as.character(can_lines.v)
@@ -30,8 +39,9 @@ can.words.l
 # Convert list to a vector
 can.words.v <- unlist(can.words.l)
 can.words.v
+s <- summary(can.words.v)
 
-# Figure out which items in the vector are not blank
+# Determine which items in the vector are not blank
 not.blanks.v <- which(can.words.v !="")
 not.blanks.v
 
@@ -39,6 +49,8 @@ not.blanks.v
 can.words.v <- can.words.v[not.blanks.v]
 class(can.words.v)
 can.words.v
+can.words.len <- length(can.words.v)
+can.words.len
 
 # Frequency table
 can.freqs.t <- table(can.words.v)
@@ -49,8 +61,9 @@ sorted.can.freqs.t[1:10]
 require(tm)
 
 can.words.c <- as.character(can.words.v)
-can.words.stopped.c <- removeWords(can.words.c, stopwords('english'))
+can.words.stopped.c <- removeWords(can.words.c, stopwords('SMART'))
 can.words.stopped.c
+# removeNumbers(can.words.stopped.c)
 
 # Figure out which items in the vector are not blank
 not.blanks.v <- which(can.words.stopped.c !="")
@@ -61,12 +74,31 @@ can.words.v <- can.words.v[not.blanks.v]
 class(can.words.v)
 can.words.v
 
+
 # Frequency table
 can.freqs.t <- table(can.words.v)
 sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
 sorted.can.freqs.t
 sorted.can.freqs.t[1:10]
+a <- as.data.frame(sorted.can.freqs.t[1:10])
+b <- as.data.frame(sorted.can.freqs.t[1:10]/can.words.len)
 
+rownames(a)
+
+
+w_plot <- plot(b, type = "b", xaxt="n",
+     main = paste(x,"'s Words", collapse = " "),
+     xlab = "Top 10 Words",
+     ylab = "Relative Frequency")
+w_plot + axis(1, at=1:10, labels = rownames(b))
+}
+
+lapply(candidate, words)
+
+
+a
+?plot
+?rownames
 
 --------------------------------------------
 
@@ -105,3 +137,6 @@ terms <- order(terms)
 terms
 
 findFreqTerms(x=tdm, lowfreq=8, highfreq=Inf)
+
+?removeWords
+getTransformations()

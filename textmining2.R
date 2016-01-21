@@ -30,7 +30,7 @@ inspect(txt.corpus)
 txt.corpus <- tm_map(txt.corpus, tolower)
 txt.corpus <- tm_map(txt.corpus, removePunctuation)
 txt.corpus <- tm_map(txt.corpus, removeNumbers)
-txt.corpus <- tm_map(txt.corpus, removeWords, stopwords("english"))
+txt.corpus <- tm_map(txt.corpus, removeWords, stopwords("SMART"))
 
 # Stem to truncate words
 require(SnowballC)
