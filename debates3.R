@@ -16,29 +16,20 @@ debate.df <- data.frame(do.call('rbind', strsplit(as.character(debate.v),':',fix
 class(debate.df)
 debate.df
 
-mods <- as.list("BLITZER")
-#, "BLITZER", "HEWITT", "QUESTION"
+
+# Remove moderators and audience questions
+mods <- list("BLITZER", "HEWITT", "BASH", "QUESTION")
 mods
-
-rm_mods <- function(x) {
-debate.df <- debate.df[!(debate.df$X1=="BLITZER",])
-}
-
-lapply(mods, rm_mods)
-
-debate.df <- debate.df[!(debate.df$X1=="BASH" |
-                           debate.df$X1=="BLITZER" |
-                           debate.df$X1=="HEWITT" |
-                           debate.df$X1=="QUESTION"),]
+debate.df <- debate.df[ ! debate.df$X1 %in% mods, ]
 
 candidates <- as.list(unique(debate.df$X1))
 candidates
-candidates <- candidate[-c(1, 11, 12, 13)] # remove moderators and audience questions
-candidates
 
-words <- function(x){
+x <- c("TRUMP")
 
-  can_lines <- debate.df#[which(debate.df$X1==(x)),]
+#words <- function(x){
+
+  can_lines <- debate.df[which(debate.df$X1==(x)),]
   can_lines$X1 <- NULL
   can_lines.v <- unlist(can_lines)
   can_lines.v <- as.character(can_lines.v)
@@ -68,7 +59,10 @@ words <- function(x){
   class(can.words.v)
   can.words.v
   can.words.len <- length(can.words.v)
+  tot.can.words <- can.words.len
+  tot.can.words
   can.words.len
+  can.words.len <- can.words.len*10
 
   # Frequency table
   can.freqs.t <- table(can.words.v)
@@ -103,16 +97,16 @@ words <- function(x){
 
   rownames(a)
 
+plot(b, type = "b", xaxt="n",
+     main = paste(x,"'s Words", collapse = " "),
+     xlab = "Top 10 Words",
+     ylab = "Relative Frequency")
+axis(1, at=1:10, labels = rownames(b))
+axis(2, at=seq(0, 1, by=.01))
 
-  w_plot <- plot(b, type = "b", xaxt="n",
-                 #main = paste(x,"'s Words", collapse = " "),
-                 xlab = "Top 10 Words",
-                 ylab = "Relative Frequency")
-  w_plot + axis(1, at=1:10, labels = rownames(b))
+#}
 
-}
-
-lapply(candidates, words)
+#lapply(candidates, words)
 
 
 a
