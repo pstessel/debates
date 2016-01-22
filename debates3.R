@@ -1,5 +1,5 @@
 if(grepl("apple", R.Version()$platform)) {
-  print("Great")
+  setwd("/Volumes/HD2/Users/pstessel/Documents/git_repos/debates/texts")
 } else {
   setwd("C:/Users/pstessel/Documents/repos/debates/texts/")
   }
@@ -16,84 +16,103 @@ debate.df <- data.frame(do.call('rbind', strsplit(as.character(debate.v),':',fix
 class(debate.df)
 debate.df
 
-candidate <- as.list(unique(debate.df$X1))
-candidate
+mods <- as.list("BLITZER")
+#, "BLITZER", "HEWITT", "QUESTION"
+mods
 
-words <- function(x){
-can_lines <- debate.df[which(debate.df$X1==(x)),]
-can_lines$X1 <- NULL
-can_lines.v <- unlist(can_lines)
-can_lines.v <- as.character(can_lines.v)
-class(can_lines.v)
-can_lines.v
-
-#### Jockers, p. 15 ####
-
-# Convert text to lowercase
-can.lower.v <- tolower(can_lines.v)
-can.lower.v
-can.lower <- gsub("[^[:alnum:][:space:]']", " ", can.lower.v)
-can.words.l <- strsplit(can.lower, "\\s+")
-can.words.l
-
-# Convert list to a vector
-can.words.v <- unlist(can.words.l)
-can.words.v
-s <- summary(can.words.v)
-
-# Determine which items in the vector are not blank
-not.blanks.v <- which(can.words.v !="")
-not.blanks.v
-
-# Retain only non-blank items
-can.words.v <- can.words.v[not.blanks.v]
-class(can.words.v)
-can.words.v
-can.words.len <- length(can.words.v)
-can.words.len
-
-# Frequency table
-can.freqs.t <- table(can.words.v)
-sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
-sorted.can.freqs.t[1:10]
-
-# Remove stopwords
-require(tm)
-
-can.words.c <- as.character(can.words.v)
-can.words.stopped.c <- removeWords(can.words.c, stopwords('SMART'))
-can.words.stopped.c
-# removeNumbers(can.words.stopped.c)
-
-# Figure out which items in the vector are not blank
-not.blanks.v <- which(can.words.stopped.c !="")
-not.blanks.v
-
-# Retain only non-blank items
-can.words.v <- can.words.v[not.blanks.v]
-class(can.words.v)
-can.words.v
-
-
-# Frequency table
-can.freqs.t <- table(can.words.v)
-sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
-sorted.can.freqs.t
-sorted.can.freqs.t[1:10]
-a <- as.data.frame(sorted.can.freqs.t[1:10])
-b <- as.data.frame(sorted.can.freqs.t[1:10]/can.words.len)
-
-rownames(a)
-
-
-w_plot <- plot(b, type = "b", xaxt="n",
-     main = paste(x,"'s Words", collapse = " "),
-     xlab = "Top 10 Words",
-     ylab = "Relative Frequency")
-w_plot + axis(1, at=1:10, labels = rownames(b))
+rm_mods <- function(x) {
+debate.df <- debate.df[!(debate.df$X1=="BLITZER",])
 }
 
-lapply(candidate, words)
+lapply(mods, rm_mods)
+
+debate.df <- debate.df[!(debate.df$X1=="BASH" |
+                           debate.df$X1=="BLITZER" |
+                           debate.df$X1=="HEWITT" |
+                           debate.df$X1=="QUESTION"),]
+
+candidates <- as.list(unique(debate.df$X1))
+candidates
+candidates <- candidate[-c(1, 11, 12, 13)] # remove moderators and audience questions
+candidates
+
+words <- function(x){
+
+  can_lines <- debate.df#[which(debate.df$X1==(x)),]
+  can_lines$X1 <- NULL
+  can_lines.v <- unlist(can_lines)
+  can_lines.v <- as.character(can_lines.v)
+  class(can_lines.v)
+  can_lines.v
+
+  #### Jockers, p. 15 ####
+
+  # Convert text to lowercase
+  can.lower.v <- tolower(can_lines.v)
+  can.lower.v
+  can.lower <- gsub("[^[:alnum:][:space:]']", " ", can.lower.v)
+  can.words.l <- strsplit(can.lower, "\\s+")
+  can.words.l
+
+  # Convert list to a vector
+  can.words.v <- unlist(can.words.l)
+  can.words.v
+  s <- summary(can.words.v)
+
+  # Determine which items in the vector are not blank
+  not.blanks.v <- which(can.words.v !="")
+  not.blanks.v
+
+  # Retain only non-blank items
+  can.words.v <- can.words.v[not.blanks.v]
+  class(can.words.v)
+  can.words.v
+  can.words.len <- length(can.words.v)
+  can.words.len
+
+  # Frequency table
+  can.freqs.t <- table(can.words.v)
+  sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
+  sorted.can.freqs.t[1:10]
+
+  # Remove stopwords
+  require(tm)
+
+  can.words.c <- as.character(can.words.v)
+  can.words.stopped.c <- removeWords(can.words.c, stopwords('SMART'))
+  can.words.stopped.c
+  # removeNumbers(can.words.stopped.c)
+
+  # Figure out which items in the vector are not blank
+  not.blanks.v <- which(can.words.stopped.c !="")
+  not.blanks.v
+
+  # Retain only non-blank items
+  can.words.v <- can.words.v[not.blanks.v]
+  class(can.words.v)
+  can.words.v
+
+
+  # Frequency table
+  can.freqs.t <- table(can.words.v)
+  sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
+  sorted.can.freqs.t
+  sorted.can.freqs.t[1:10]
+  a <- as.data.frame(sorted.can.freqs.t[1:10])
+  b <- as.data.frame(sorted.can.freqs.t[1:10]/can.words.len)
+
+  rownames(a)
+
+
+  w_plot <- plot(b, type = "b", xaxt="n",
+                 #main = paste(x,"'s Words", collapse = " "),
+                 xlab = "Top 10 Words",
+                 ylab = "Relative Frequency")
+  w_plot + axis(1, at=1:10, labels = rownames(b))
+
+}
+
+lapply(candidates, words)
 
 
 a
