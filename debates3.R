@@ -9,16 +9,27 @@ rm(list=ls(all = TRUE))
 require(dplyr)
 require(stringr)
 
-# Read in text
-debate.v <- scan("r_121515.1.txt", what="character", sep="\n")
 
-debate.df <- data.frame(do.call('rbind', strsplit(as.character(debate.v),':',fixed=TRUE)))
+# Read in text
+debate.v <- scan("d_020416.raw.txt", what="character", sep="\n")
+# debate.v <- scan("test.txt", what="character", sep="\n")
+debate.v
+
+
+d1 <- gsub("\\[.*?\\]", "", debate.v, perl = T) #remove bracketed words (and brackets)
+d1
+
+d1.v <- paste(d1, collapse=" ")
+d1.v
+
+
+debate.df <- data.frame(do.call('rbind', strsplit(as.character(d1.v),':',fixed=TRUE)))
 class(debate.df)
 debate.df
 
 
 # Remove moderators and audience questions
-mods <- list("BLITZER", "HEWITT", "BASH", "QUESTION")
+mods <- list("MADDOW", "TODD")
 mods
 debate.df <- debate.df[ ! debate.df$X1 %in% mods, ]
 
