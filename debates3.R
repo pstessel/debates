@@ -9,7 +9,9 @@ if(grepl("PHSs-MacBook-Air.local", Sys.info()["nodename"])) {
 }
 getwd()
 
-rm(list=ls(all = TRUE))
+rm(list=ls(all = TRUE)) #Clear environment
+dev.off(dev.list()["RStudioGD"])#Clear devices
+cat("\014") #Clear console
 
 require(dplyr)
 require(stringr)
@@ -29,7 +31,7 @@ class(debate.df)
 debate.df
 
 # Remove moderators and audience questions
-mods <- list("MADDOW", "TODD")
+mods <- list("MUIR", "RADDATZ", "HAM", "MCELVEEN")
 mods
 debate.df <- debate.df[ ! debate.df$X1 %in% mods, ]
 
@@ -60,7 +62,7 @@ x <- c("TRUMP")
   # Convert list to a vector
   can.words.v <- unlist(can.words.l)
   can.words.v
-  s <- summary(can.words.v)
+  length(can.words.v)
 
   # Determine which items in the vector are not blank
   not.blanks.v <- which(can.words.v !="")
@@ -74,10 +76,10 @@ x <- c("TRUMP")
   tot.can.words <- can.words.len
   tot.can.words
   can.words.len
-  can.words.len <- can.words.len*10
 
   # Frequency table
   can.freqs.t <- table(can.words.v)
+  can.freqs.t
   sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
   sorted.can.freqs.t[1:10]
 
@@ -87,44 +89,46 @@ x <- c("TRUMP")
   can.words.c <- as.character(can.words.v)
   can.words.stopped.c <- removeWords(can.words.c, stopwords('SMART'))
   can.words.stopped.c
-  removeNumbers(can.words.stopped.c)
+  # removeNumbers(can.words.stopped.c)
 
   # Figure out which items in the vector are not blank
   not.blanks.v <- which(can.words.stopped.c !="")
   not.blanks.v
 
-# Retain only non-blank items
-can.words.v <- can.words.v[not.blanks.v]
-class(can.words.v)
-can.words.v
+  # Retain only non-blank items
+  can.words.v <- can.words.v[not.blanks.v]
+  class(can.words.v)
+  can.words.v
 
-#Number of unique words used by candidate (excluding stop words)
-can.unique.v <- unique(can.words.v)
-can.unique.v
-length(can.unique.v)
+  #Number of unique words used by candidate (excluding stop words)
+  can.unique.v <- unique(can.words.v)
+  can.unique.v
+  length(can.unique.v)
 
-# Frequency table
-can.freqs.t <- table(can.words.v)
-sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
-sorted.can.freqs.t
-sorted.can.freqs.t[1:10]
-a <- as.data.frame(sorted.can.freqs.t[1:10])
-b <- as.data.frame(sorted.can.freqs.t[1:10]/can.words.len)
+  # Frequency table
+  can.freqs.t <- table(can.words.v)
+  sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
+  sorted.can.freqs.t
+  sorted.can.freqs.t[1:10]
+  a <- as.data.frame(sorted.can.freqs.t[1:10])
+  b <- as.data.frame((sorted.can.freqs.t[1:10]/can.words.len))
+
+  plot(b, type = "b", xaxt="n",
+      main = paste(x,"'s Words", collapse = " "),
+      xlab = "Top 10 Words",
+      ylab = "Relative Frequency")
+  axis(1, at=1:10, labels = rownames(b))
+  axis(2, at=seq(0, 1, by=.01))
+
+  require(qdap)
+  x <- can.unique.v
+  mean.syallables <- mean(syllable_sum(x))
 
 
-plot(b, type = "b", xaxt="n",
-     main = paste(x,"'s Words", collapse = " "),
-     xlab = "Top 10 Words",
-     ylab = "Relative Frequency")
-axis(1, at=1:10, labels = rownames(b))
-axis(2, at=seq(0, 1, by=.01))
 
-require(qdap)
-x <- can.unique.v
-mean(syllable_sum(x))
-
-can.unique.v[1055]
-
+  
+#===================================================================
+  
 library(twitteR)
 library(sentiment)
 library(plyr)
