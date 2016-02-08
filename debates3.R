@@ -1,8 +1,13 @@
-if(grepl("apple", R.Version()$platform)) {
+#http://www.presidency.ucsb.edu/debates.php
+
+if(grepl("PHSs-MacBook-Air.local", Sys.info()["nodename"])) {
+  setwd("/Users/PHS/Documents/Git_Repos/debates/texts")
+} else if(grepl("iMac", Sys.info()["nodename"])) {
   setwd("/Volumes/HD2/Users/pstessel/Documents/git_repos/debates/texts")
 } else {
   setwd("C:/Users/pstessel/Documents/repos/debates/texts/")
-  }
+}
+getwd()
 
 rm(list=ls(all = TRUE))
 
@@ -11,7 +16,7 @@ require(stringr)
 
 
 # Read in text
-debate.v <- scan("d_020416.raw.txt", what="character", sep="\n")
+debate.v <- scan("r_020616.txt", what="character", sep="\n")
 # debate.v <- scan("test.txt", what="character", sep="\n")
 debate.v
 
@@ -19,14 +24,9 @@ debate.v
 d1 <- gsub("\\[.*?\\]", "", debate.v, perl = T) #remove bracketed words (and brackets)
 d1
 
-d1.v <- paste(d1, collapse=" ")
-d1.v
-
-
-debate.df <- data.frame(do.call('rbind', strsplit(as.character(d1.v),':',fixed=TRUE)))
+debate.df <- data.frame(do.call('rbind', strsplit(as.character(d1),':',fixed=TRUE)))
 class(debate.df)
 debate.df
-
 
 # Remove moderators and audience questions
 mods <- list("MADDOW", "TODD")
@@ -53,6 +53,7 @@ x <- c("TRUMP")
   can.lower.v <- tolower(can_lines.v)
   can.lower.v
   can.lower <- gsub("[^[:alnum:][:space:]']", " ", can.lower.v)
+  can.lower <- gsub("[[:digit:]]", " ", can.lower)
   can.words.l <- strsplit(can.lower, "\\s+")
   can.words.l
 
@@ -86,27 +87,30 @@ x <- c("TRUMP")
   can.words.c <- as.character(can.words.v)
   can.words.stopped.c <- removeWords(can.words.c, stopwords('SMART'))
   can.words.stopped.c
-  # removeNumbers(can.words.stopped.c)
+  removeNumbers(can.words.stopped.c)
 
   # Figure out which items in the vector are not blank
   not.blanks.v <- which(can.words.stopped.c !="")
   not.blanks.v
 
-  # Retain only non-blank items
-  can.words.v <- can.words.v[not.blanks.v]
-  class(can.words.v)
-  can.words.v
+# Retain only non-blank items
+can.words.v <- can.words.v[not.blanks.v]
+class(can.words.v)
+can.words.v
 
+#Number of unique words used by candidate (excluding stop words)
+can.unique.v <- unique(can.words.v)
+can.unique.v
+length(can.unique.v)
 
-  # Frequency table
-  can.freqs.t <- table(can.words.v)
-  sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
-  sorted.can.freqs.t
-  sorted.can.freqs.t[1:10]
-  a <- as.data.frame(sorted.can.freqs.t[1:10])
-  b <- as.data.frame(sorted.can.freqs.t[1:10]/can.words.len)
+# Frequency table
+can.freqs.t <- table(can.words.v)
+sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
+sorted.can.freqs.t
+sorted.can.freqs.t[1:10]
+a <- as.data.frame(sorted.can.freqs.t[1:10])
+b <- as.data.frame(sorted.can.freqs.t[1:10]/can.words.len)
 
-  rownames(a)
 
 plot(b, type = "b", xaxt="n",
      main = paste(x,"'s Words", collapse = " "),
@@ -115,11 +119,18 @@ plot(b, type = "b", xaxt="n",
 axis(1, at=1:10, labels = rownames(b))
 axis(2, at=seq(0, 1, by=.01))
 
-#}
+require(qdap)
+x <- can.unique.v
+mean(syllable_sum(x))
 
-#lapply(candidates, words)
+can.unique.v[1055]
 
-
+library(twitteR)
+library(sentiment)
+library(plyr)
+library(ggplot2)
+library(wordcloud)
+library(RColorBrewer)
 a
 ?plot
 ?rownames

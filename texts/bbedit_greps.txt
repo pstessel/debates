@@ -1,0 +1,28 @@
+BBEDIT GREP CLEAN UP SEARCHES
+
+
+Find: (^.*:)
+Replace ~\1
+
+Find \r*
+Replace “”
+
+Find ~
+Replace \r
+
+
+————————
+Find: (^\w*):
+Replace: ~\1~
+
+F: :
+R: “”
+
+Find \r*
+Replace “”
+
+F: ~(.*?)~
+R: \r\1:
+
+F: —
+R: “ ”
