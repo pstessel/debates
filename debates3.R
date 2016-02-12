@@ -18,15 +18,37 @@ require(stringr)
 
 
 # Read in text
-debate.v <- scan("r_020616.txt", what="character", sep="\n")
+debate.v <- scan("d_021116_raw.txt", what="character", sep="\n")
 # debate.v <- scan("test.txt", what="character", sep="\n")
 debate.v
+debate.v <- gsub("^\\s*", "", debate.v)
+debate.v
 
-
-d1 <- gsub("\\[.*?\\]", "", debate.v, perl = T) #remove bracketed words (and brackets)
+d1 <- gsub("(^\\w*):", "~\\1~", debate.v, perl = T)
 d1
+d2 <- gsub(":", "", d1)
+d2
+d3 <- gsub("\\r*|\\n*|\\t*", "", d2)
+d3
+d4 <- gsub("~(.*?)~", "\\1:", d3, perl = T)
+d4
+d5 <- gsub("\\(.*?\\)", "", debate.v, perl = T) #remove bracketed words (and brackets)
+d5
 
-debate.df <- data.frame(do.call('rbind', strsplit(as.character(d1),':',fixed=TRUE)))
+# Figure out which items in the vector are not blank
+not.blanks.d5 <- which(d5 !="")
+not.blanks.d5
+
+# Retain only non-blank items
+d6 <- d5[not.blanks.d5]
+d6
+class(d6)
+
+d7 <- gsub("^\\s+|\\s+$", "", d6)
+d7
+
+
+debate.df <- data.frame(do.call('rbind', strsplit(as.character(d7),':',fixed=TRUE)))
 class(debate.df)
 debate.df
 
