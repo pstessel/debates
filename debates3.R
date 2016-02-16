@@ -1,36 +1,46 @@
-#http://www.presidency.ucsb.edu/debates.php
+#Raw debate transcripts obtained from http://www.presidency.ucsb.edu/debates.php
 
 if(grepl("PHSs-MacBook-Air.local", Sys.info()["nodename"])) {
-  setwd("/Users/PHS/Documents/Git_Repos/debates/texts")
+  setwd("/Users/PHS/Documents/Git_Repos/debates")
 } else if(grepl("iMac", Sys.info()["nodename"])) {
-  setwd("/Volumes/HD2/Users/pstessel/Documents/git_repos/debates/texts")
+  setwd("/Volumes/HD2/Users/pstessel/Documents/git_repos/debates")
 } else {
-  setwd("C:/Users/pstessel/Documents/repos/debates/texts/")
+  setwd("C:/Users/pstessel/Documents/repos/debates")
 }
 getwd()
 
 rm(list=ls(all = TRUE)) #Clear environment
-dev.off(dev.list()["RStudioGD"])#Clear devices
+dev.off(dev.list()["RStudioGD"]) #Clear devices
 cat("\014") #Clear console
 
 require(dplyr)
 require(stringr)
 
+party <- ("r_")
+debate.date <- ("021316")
+txt.path <- ("texts/") # path for text files
+img.path <- ("images/") # path for image files
 
 # Read in text
-debate.v <- scan("d_021116_raw.txt", what="character", sep="\n")
-# debate.v <- scan("test.txt", what="character", sep="\n")
-debate.v
-debate.v <- gsub("^\\s*", "", debate.v)
+debate.v <- scan(paste(txt.path,party,debate.date,".txt",
+                       collapse = "", sep = ""),
+                 what="character", sep="\n")
 debate.v
 
-d1 <- gsub("(^\\w*):", "~\\1~", debate.v, perl = T)
+Encoding(debate.v) <- "UTF-8"
+iconv(debate.v, "latin1", "UTF-8",sub='') ## replace any non UTF-8 by ''
+debate.v
+
+debate.v <- str_replace_all(debate.v,"[^[:graph:]]", " ")
+debate.v
+
+d1 <- gsub("(^\\w*):", "~\\1|", debate.v, perl = T)
 d1
 d2 <- gsub(":", "", d1)
 d2
 d3 <- gsub("\\r*|\\n*|\\t*", "", d2)
 d3
-d4 <- gsub("~(.*?)~", "\\1:", d3, perl = T)
+d4 <- gsub("~(.*?)\\|", "\\1:", d3, perl = T)
 d4
 d5 <- gsub("\\(.*?\\)", "", debate.v, perl = T) #remove bracketed words (and brackets)
 d5
@@ -47,21 +57,22 @@ class(d6)
 d7 <- gsub("^\\s+|\\s+$", "", d6)
 d7
 
-
-debate.df <- data.frame(do.call('rbind', strsplit(as.character(d7),':',fixed=TRUE)))
+debate.df <- data.frame(do.call('rbind',
+                                strsplit(as.character(d7),
+                                         ':',fixed = TRUE)))
 class(debate.df)
 debate.df
 
 # Remove moderators and audience questions
-mods <- list("MUIR", "RADDATZ", "HAM", "MCELVEEN")
+mods <- list("DICKERSON", "STRASSEL")
 mods
 debate.df <- debate.df[ ! debate.df$X1 %in% mods, ]
 
 candidates <- as.list(unique(debate.df$X1))
 candidates
 
-x <- c("TRUMP")
-
+x <- c("CARSON")
+who <- x
 #words <- function(x){
 
   can_lines <- debate.df[which(debate.df$X1==(x)),]
@@ -135,69 +146,89 @@ x <- c("TRUMP")
   a <- as.data.frame(sorted.can.freqs.t[1:10])
   b <- as.data.frame((sorted.can.freqs.t[1:10]/can.words.len))
 
+  png(paste("top_10_words_",who,".png"))
   plot(b, type = "b", xaxt="n",
-      main = paste(x,"'s Words", collapse = " "),
+      main = paste(x,"'s Words", collapse = ""),
       xlab = "Top 10 Words",
       ylab = "Relative Frequency")
   axis(1, at=1:10, labels = rownames(b))
   axis(2, at=seq(0, 1, by=.01))
+  dev.off()
 
   require(qdap)
   x <- can.unique.v
-  mean.syallables <- mean(syllable_sum(x))
+  mean.syllables <- mean(syllable_sum(x))
 
 
 
   
 #===================================================================
-  
-library(twitteR)
-library(sentiment)
+
 library(plyr)
 library(ggplot2)
 library(wordcloud)
 library(RColorBrewer)
-a
-?plot
-?rownames
 
 --------------------------------------------
 
 # Convert vector of character strings to a corpus of text using 'VectorSource' and 'Corpus'
 require(tm)
-txt <- VectorSource(can_lines)
-txt.corpus <- Corpus(txt); rm(txt)
-inspect(txt.corpus)
+  wordCorpus <- Corpus(VectorSource(can.words.v))
+  wordCorpus <- tm_map(wordCorpus, removePunctuation)
+  wordCorpus <- tm_map(wordCorpus, removeNumbers)
+  wordCorpus <- tm_map(wordCorpus, content_transformer(tolower))
+  #wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"))
+  wordCorpus <- tm_map(wordCorpus, removeWords, c("amp"))
+  wordCorpus <- tm_map(wordCorpus, stripWhitespace)
+  
+  
+  png(paste("wordcloud_",party,debate.date,"_",who,".png", collapse = ""))
+  pal <- brewer.pal(9, "Blues")
+  pal <- pal[-(1:4)]
+  set.seed(123)
+  wordcloud(words = wordCorpus, scale = c(3,0.1), max.words = 100, random.order = F,
+            rot.per = 0.25, use.r.layout = F, colors = pal)
+  dev.off()
+  ?wordcloud
+  ?brewer.pal
+  
+  
+# Sentiment Analysis ------------------------------------------------------
+  library(syuzhet)
+  library(lubridate)
+  library(ggplot2)
+  library(scales)
+  library(reshape2)
+  library(dplyr )
 
-txt.corpus <- tm_map(txt.corpus, tolower)
-inspect(txt.corpus)
-txt.corpus <- tm_map(txt.corpus, removePunctuation)
-txt.corpus <- tm_map(txt.corpus, removeNumbers)
-txt.corpus <- tm_map(txt.corpus, removeWords, stopwords("english"))
+  mySentiment <- get_nrc_sentiment(can.words.v)
+  
+  head(mySentiment)
+  
+  words <- (cbind(can.words.v, mySentiment))
+  class(words)
+  
+  # Let's look at the sentiment scores for the eight emotions from the NRC lexicon
+  # in aggregate for all my tweets. What are the most common emotions in my
+  # tweets, as measured by this sentiment analysis algorithm?
+  
+  sentimentTotals <- data.frame(colSums(words[,c(2:9)]))
+  names(sentimentTotals) <- "count"
+  sentimentTotals <- cbind("sentiment" = rownames(sentimentTotals), sentimentTotals)
+  max <- max(sentimentTotals$count)
+  min <- min(sentimentTotals$count)
+  sentimentTotals$norm <- (sentimentTotals$count-min)/(max-min)
+  sentimentTotals$norm
+  sum <- sum(sentimentTotals$count)
+  rownames(sentimentTotals) <- NULL
+  ggplot(data = sentimentTotals, aes(x = sentiment, y = count/sum)) +
+    geom_bar(aes(fill = sentiment), stat = "identity") +
+    theme(legend.position = "none") +
+    xlab("Sentiment") + ylab("Relative Value") + 
+    # ggtitle("Total Sentiment Score for Trump Debate Words\n2/4/16")
+    ggtitle(paste("Total Sentiment Score for", who,"'s Words\n2/13/16", collapse = ""))
+  ggsave(paste("sentiment_",party,debate.date,who,".png", collapse=""))
+# END ---------------------------------------------------------------------
 
-# Stem to truncate words
-require(SnowballC)
-txt.corpus <- tm_map(txt.corpus, stemDocument)
-detach("package:SnowballC")
-inspect(txt.corpus)
-
-# Remove empty spaces
-
-txt.corpus <- tm_map(txt.corpus, stripWhitespace)
-inspect(txt.corpus)
-
-txt.corpus <- tm_map(txt.corpus, PlainTextDocument)
-
-tdm <- TermDocumentMatrix(txt.corpus)
-#inspect(tdm)
-inspect(tdm)
-
-terms <- inspect(tdm)
-terms
-terms <- order(terms)
-terms
-
-findFreqTerms(x=tdm, lowfreq=8, highfreq=Inf)
-
-?removeWords
-getTransformations()
+?ggplot
+  
