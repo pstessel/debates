@@ -16,8 +16,8 @@ cat("\014") #Clear console
 require(dplyr)
 require(stringr)
 
-party <- ("r_")
-debate.date <- ("021316")
+party <- ("d_")
+debate.date <- ("030916")
 txt.path <- ("texts/") # path for text files
 img.path <- ("images/") # path for image files
 
@@ -42,7 +42,7 @@ d3 <- gsub("\\r*|\\n*|\\t*", "", d2)
 d3
 d4 <- gsub("~(.*?)\\|", "\\1:", d3, perl = T)
 d4
-d5 <- gsub("\\(.*?\\)", "", debate.v, perl = T) #remove bracketed words (and brackets)
+d5 <- gsub("\\[.*?\\]", "", debate.v, perl = T) #remove bracketed words (and brackets)
 d5
 
 # Figure out which items in the vector are not blank
@@ -64,14 +64,16 @@ class(debate.df)
 debate.df
 
 # Remove moderators and audience questions
-mods <- list("DICKERSON", "STRASSEL")
+mods <- list("RAMOS", "SALINAS", "TUMULTY")
 mods
 debate.df <- debate.df[ ! debate.df$X1 %in% mods, ]
 
 candidates <- as.list(unique(debate.df$X1))
 candidates
 
-x <- c("CARSON")
+debate.df$X1
+
+x <- c("CLINTON")
 who <- x
 #words <- function(x){
 
@@ -92,10 +94,10 @@ who <- x
   can.words.l <- strsplit(can.lower, "\\s+")
   can.words.l
 
-  # Convert list to a vector
+  # Convert list of candidate words to a vector
   can.words.v <- unlist(can.words.l)
   can.words.v
-  length(can.words.v)
+  length(can.words.v) # get vector length
 
   # Determine which items in the vector are not blank
   not.blanks.v <- which(can.words.v !="")
@@ -106,15 +108,15 @@ who <- x
   class(can.words.v)
   can.words.v
   can.words.len <- length(can.words.v)
-  tot.can.words <- can.words.len
+  tot.can.words <- can.words.len # total number of candidate words
   tot.can.words
   can.words.len
 
-  # Frequency table
+  # Frequency table of candidate words
   can.freqs.t <- table(can.words.v)
   can.freqs.t
-  sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
-  sorted.can.freqs.t[1:10]
+  sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T) # sort words in descending order
+  sorted.can.freqs.t[1:10] # get the top ten words
 
   # Remove stopwords
   require(tm)
@@ -140,28 +142,31 @@ who <- x
 
   # Frequency table
   can.freqs.t <- table(can.words.v)
+  can.freqs.t
   sorted.can.freqs.t <- sort(can.freqs.t, decreasing = T)
   sorted.can.freqs.t
   sorted.can.freqs.t[1:10]
+
   a <- as.data.frame(sorted.can.freqs.t[1:10])
   b <- as.data.frame((sorted.can.freqs.t[1:10]/can.words.len))
 
+ # [MAKE THIS A BAR PLOT AND TURN ON SIDE]
   png(paste("top_10_words_",who,".png"))
   plot(b, type = "b", xaxt="n",
       main = paste(x,"'s Words", collapse = ""),
       xlab = "Top 10 Words",
       ylab = "Relative Frequency")
   axis(1, at=1:10, labels = rownames(b))
-  axis(2, at=seq(0, 1, by=.01))
+  axis(2, at=seq(0, 1, by=.1))
   dev.off()
 
   require(qdap)
   x <- can.unique.v
   mean.syllables <- mean(syllable_sum(x))
+mean.syllables
 
 
 
-  
 #===================================================================
 
 library(plyr)
@@ -180,8 +185,8 @@ require(tm)
   #wordCorpus <- tm_map(wordCorpus, removeWords, stopwords("english"))
   wordCorpus <- tm_map(wordCorpus, removeWords, c("amp"))
   wordCorpus <- tm_map(wordCorpus, stripWhitespace)
-  
-  
+
+
   png(paste("wordcloud_",party,debate.date,"_",who,".png", collapse = ""))
   pal <- brewer.pal(9, "Blues")
   pal <- pal[-(1:4)]
@@ -189,10 +194,8 @@ require(tm)
   wordcloud(words = wordCorpus, scale = c(3,0.1), max.words = 100, random.order = F,
             rot.per = 0.25, use.r.layout = F, colors = pal)
   dev.off()
-  ?wordcloud
-  ?brewer.pal
-  
-  
+
+
 # Sentiment Analysis ------------------------------------------------------
   library(syuzhet)
   library(lubridate)
@@ -202,19 +205,16 @@ require(tm)
   library(dplyr )
 
   mySentiment <- get_nrc_sentiment(can.words.v)
-  
+
   head(mySentiment)
-  
+
   words <- (cbind(can.words.v, mySentiment))
   class(words)
-  
-  # Let's look at the sentiment scores for the eight emotions from the NRC lexicon
-  # in aggregate for all my tweets. What are the most common emotions in my
-  # tweets, as measured by this sentiment analysis algorithm?
-  
-  sentimentTotals <- data.frame(colSums(words[,c(2:9)]))
-  names(sentimentTotals) <- "count"
-  sentimentTotals <- cbind("sentiment" = rownames(sentimentTotals), sentimentTotals)
+
+# Look at the sentiment scores for the eight emotions from the NRC lexicon
+sentimentTotals <- data.frame(colSums(words[,c(2:9)]))
+names(sentimentTotals) <- "count"
+sentimentTotals <- cbind("sentiment" = rownames(sentimentTotals), sentimentTotals)
   max <- max(sentimentTotals$count)
   min <- min(sentimentTotals$count)
   sentimentTotals$norm <- (sentimentTotals$count-min)/(max-min)
@@ -224,11 +224,10 @@ require(tm)
   ggplot(data = sentimentTotals, aes(x = sentiment, y = count/sum)) +
     geom_bar(aes(fill = sentiment), stat = "identity") +
     theme(legend.position = "none") +
-    xlab("Sentiment") + ylab("Relative Value") + 
+    xlab("Sentiment") + ylab("Relative Value") +
     # ggtitle("Total Sentiment Score for Trump Debate Words\n2/4/16")
-    ggtitle(paste("Total Sentiment Score for", who,"'s Words\n2/13/16", collapse = ""))
+    ggtitle(paste("Total Sentiment Score for", who,"'s Words\n",debate.date,collapse = ""))
   ggsave(paste("sentiment_",party,debate.date,who,".png", collapse=""))
 # END ---------------------------------------------------------------------
 
 ?ggplot
-  
