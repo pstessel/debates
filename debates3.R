@@ -1,5 +1,6 @@
 #Raw debate transcripts obtained from http://www.presidency.ucsb.edu/debates.php
 
+# Detect system/machine to determine working directory
 if(grepl("PHSs-MacBook-Air.local", Sys.info()["nodename"])) {
   setwd("/Users/PHS/Documents/Git_Repos/debates")
 } else if(grepl("iMac", Sys.info()["nodename"])) {
@@ -7,17 +8,18 @@ if(grepl("PHSs-MacBook-Air.local", Sys.info()["nodename"])) {
 } else {
   setwd("C:/Users/pstessel/Documents/repos/debates")
 }
-getwd()
 
+# Clean-up workspace
 rm(list=ls(all = TRUE)) #Clear environment
 dev.off(dev.list()["RStudioGD"]) #Clear devices
 cat("\014") #Clear console
 
-require(dplyr)
-require(stringr)
+# Load libraries
+library(dplyr)
+library(stringr)
 
-party <- ("d_")
-debate.date <- ("030916")
+party <- ("d_") # party of the debate
+debate.date <- ("030916") # date of the debate
 txt.path <- ("texts/") # path for text files
 img.path <- ("images/") # path for image files
 
@@ -25,7 +27,7 @@ img.path <- ("images/") # path for image files
 debate.v <- scan(paste(txt.path,party,debate.date,".txt",
                        collapse = "", sep = ""),
                  what="character", sep="\n")
-debate.v
+debate.v # check
 
 Encoding(debate.v) <- "UTF-8"
 iconv(debate.v, "latin1", "UTF-8",sub='') ## replace any non UTF-8 by ''
@@ -43,7 +45,7 @@ d3
 d4 <- gsub("~(.*?)\\|", "\\1:", d3, perl = T)
 d4
 d5 <- gsub("\\[.*?\\]", "", debate.v, perl = T) #remove bracketed words (and brackets)
-d5
+d5 # check
 
 # Figure out which items in the vector are not blank
 not.blanks.d5 <- which(d5 !="")
@@ -229,5 +231,3 @@ sentimentTotals <- cbind("sentiment" = rownames(sentimentTotals), sentimentTotal
     ggtitle(paste("Total Sentiment Score for", who,"'s Words\n",debate.date,collapse = ""))
   ggsave(paste("sentiment_",party,debate.date,who,".png", collapse=""))
 # END ---------------------------------------------------------------------
-
-?ggplot
